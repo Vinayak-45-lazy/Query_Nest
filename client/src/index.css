@@ -1,0 +1,22 @@
+/* Tailwind base styles */
+@import 'tailwindcss/base.css';
+/* Tailwind component styles */
+@import 'tailwindcss/components.css';
+/* Tailwind utility styles */
+@import 'tailwindcss/utilities.css';
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: #F9FAFB;
+  color: #1F2937;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid #2D3A8C;
+  outline-offset: 2px;
+}

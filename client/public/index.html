@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2D3A8C" />
+    <meta
+      name="description"
+      content="QueryNest — AI-powered question generator for students and educators. Upload any PDF and instantly generate MCQ, short answer, and true/false questions."
+    />
+    <meta name="keywords" content="AI question generator, MCQ generator, study tool, PDF quiz, EdTech" />
+    <meta property="og:title" content="QueryNest — AI Question Generator" />
+    <meta property="og:description" content="Upload a PDF. Generate smart questions instantly." />
+    <meta property="og:type" content="website" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>QueryNest — AI Question Generator</title>
+
+    <style>
+      /* Base reset & font */
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background-color: #F9FAFB;
+        color: #1F2937;
+      }
+
+      /* Loading splash screen */
+      #splash {
+        position: fixed;
+        inset: 0;
+        background: #2D3A8C;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.4s ease;
+      }
+
+      #splash.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #splash-logo {
+        font-family: 'DM Serif Display', serif;
+        font-size: 2.5rem;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+      }
+
+      #splash-logo span {
+        color: #F59E0B;
+      }
+
+      #splash-sub {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.6);
+        margin-top: 0.5rem;
+        letter-spacing: 0.05em;
+      }
+
+      #splash-bar {
+        width: 120px;
+        height: 3px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 99px;
+        margin-top: 2rem;
+        overflow: hidden;
+      }
+
+      #splash-bar-inner {
+        height: 100%;
+        width: 0%;
+        background: #F59E0B;
+        border-radius: 99px;
+        animation: loadBar 1.2s ease forwards;
+      }
+
+      @keyframes loadBar {
+        0%   { width: 0%; }
+        60%  { width: 70%; }
+        100% { width: 100%; }
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #F9FAFB;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #CBD5E1;
+        border-radius: 99px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94A3B8;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run QueryNest.</noscript>
+
+    <!-- Splash screen -->
+    <div id="splash">
+      <div id="splash-logo">Query<span>Nest</span></div>
+      <div id="splash-sub">AI Question Generator</div>
+      <div id="splash-bar">
+        <div id="splash-bar-inner"></div>
+      </div>
+    </div>
+
+    <!-- React root -->
+    <div id="root"></div>
+
+    <script>
+      // Hide splash once React mounts
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          var splash = document.getElementById('splash');
+          if (splash) {
+            splash.classList.add('hidden');
+            setTimeout(function () {
+              splash.remove();
+            }, 400);
+          }
+        }, 1300);
+      });
+    </script>
+  </body>
+</html>
