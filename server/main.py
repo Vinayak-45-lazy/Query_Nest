@@ -34,12 +34,14 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://query-nest-rho.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.include_router(upload.router,   prefix="/api/upload",   tags=["Upload"])
 app.include_router(generate.router, prefix="/api/generate", tags=["Generate"])
 app.include_router(download.router, prefix="/api/download", tags=["Download"])
