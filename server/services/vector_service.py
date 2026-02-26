@@ -1,90 +1,54 @@
 import os
-from typing import List
-
-from langchain_core.documents import Document
-from langchain_community.embeddings import HuggingFaceEmbeddings
+import logging
 from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
-# ───────────────────────────────────────────
-# Local embeddings — 100% free, no API key
-# Downloads model on first run (~90MB)
-# ───────────────────────────────────────────
-
-embeddings = HuggingFaceEmbeddings(
-    model_name="all-MiniLM-L6-v2",
-    model_kwargs={"device": "cpu"},
-    encode_kwargs={"normalize_embeddings": True},
-)
+logger = logging.getLogger(__name__)
 
 VECTORSTORE_FOLDER = os.getenv("VECTORSTORE_FOLDER", "vectorstores")
 
+_embeddings = None
 
-# ───────────────────────────────────────────
-# Build & Save
-# ───────────────────────────────────────────
 
-def build_vectorstore(chunks: List[Document], session_id: str) -> FAISS:
-    """
-    Build a FAISS vector store from document chunks and persist it locally.
-    """
-    if not chunks:
-        raise ValueError("No chunks provided to build vector store.")
+def get_embeddings():
+    global _embeddings
+    if _embeddings is None:
+        logger.info("Loading FastEmbed model (lightweight, no PyTorch)...")
+        _embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+        logger.info("Embeddings model loaded successfully")
+    return _embeddings
 
+
+def build_vectorstore(chunks: list, session_id: str) -> FAISS:
+    embeddings = get_embeddings()
     vectorstore = FAISS.from_documents(chunks, embeddings)
-
     save_path = os.path.join(VECTORSTORE_FOLDER, session_id)
     os.makedirs(save_path, exist_ok=True)
     vectorstore.save_local(save_path)
-
+    logger.info(f"Vector store built and saved for session {session_id}")
     return vectorstore
 
-
-# ───────────────────────────────────────────
-# Load
-# ───────────────────────────────────────────
 
 def load_vectorstore(session_id: str) -> FAISS:
-    """
-    Load a previously saved FAISS vector store for a session.
-    """
-    load_path = os.path.join(VECTORSTORE_FOLDER, session_id)
-
-    if not os.path.exists(load_path):
-        raise FileNotFoundError(
-            f"Vector store not found for session '{session_id}'. "
-            "Please upload a PDF first."
-        )
-
-    vectorstore = FAISS.load_local(
-        load_path,
+    embeddings = get_embeddings()
+    save_path = os.path.join(VECTORSTORE_FOLDER, session_id)
+    if not os.path.exists(save_path):
+        raise FileNotFoundError(f"Vector store not found for session {session_id}")
+    return FAISS.load_local(
+        save_path,
         embeddings,
-        allow_dangerous_deserialization=True,
+        allow_dangerous_deserialization=True
     )
-    return vectorstore
 
 
-# ───────────────────────────────────────────
-# Similarity Search
-# ───────────────────────────────────────────
-
-def search(session_id: str, query: str, k: int = 10) -> List[Document]:
-    """
-    Retrieve the top-k most relevant chunks for a query.
-    """
-    vectorstore = load_vectorstore(session_id)
-    results = vectorstore.similarity_search(query, k=k)
+def search(session_id: str, query: str, k: int = 10) -> list:
+    vs = load_vectorstore(session_id)
+    results = vs.similarity_search(query, k=k)
     return results
 
 
-# ───────────────────────────────────────────
-# Cleanup
-# ───────────────────────────────────────────
-
-def delete_vectorstore(session_id: str) -> None:
-    """
-    Remove a session's vector store from disk.
-    """
+def delete_vectorstore(session_id: str):
     import shutil
-    store_path = os.path.join(VECTORSTORE_FOLDER, session_id)
-    if os.path.exists(store_path):
-        shutil.rmtree(store_path)
+    save_path = os.path.join(VECTORSTORE_FOLDER, session_id)
+    if os.path.exists(save_path):
+        shutil.rmtree(save_path)

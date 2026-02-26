@@ -3,7 +3,7 @@ langchain-community
 langchain-core
 langchain-groq
 groq
-sentence-transformers
+fastembed
 pypdf
 tiktoken
 aiofiles
