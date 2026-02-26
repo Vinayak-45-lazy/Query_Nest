@@ -13,13 +13,11 @@ _embeddings = None
 def get_embeddings():
     global _embeddings
     if _embeddings is None:
-        logger.info("Loading HuggingFace embeddings...")
         _embeddings = HuggingFaceEmbeddings(
             model_name="all-MiniLM-L6-v2",
             model_kwargs={"device": "cpu"},
             encode_kwargs={"normalize_embeddings": True},
         )
-        logger.info("Embeddings loaded successfully")
     return _embeddings
 
 
@@ -29,7 +27,6 @@ def build_vectorstore(chunks: list, session_id: str) -> FAISS:
     save_path = os.path.join(VECTORSTORE_FOLDER, session_id)
     os.makedirs(save_path, exist_ok=True)
     vectorstore.save_local(save_path)
-    logger.info(f"Vector store built for session {session_id}")
     return vectorstore
 
 
