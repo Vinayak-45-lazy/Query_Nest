@@ -1,7 +1,7 @@
 import os
 import logging
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 logger = logging.getLogger(__name__)
 
@@ -13,9 +13,13 @@ _embeddings = None
 def get_embeddings():
     global _embeddings
     if _embeddings is None:
-        logger.info("Loading FastEmbed model (lightweight, no PyTorch)...")
-        _embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
-        logger.info("Embeddings model loaded successfully")
+        logger.info("Loading HuggingFace embeddings...")
+        _embeddings = HuggingFaceEmbeddings(
+            model_name="all-MiniLM-L6-v2",
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True},
+        )
+        logger.info("Embeddings loaded successfully")
     return _embeddings
 
 
@@ -25,7 +29,7 @@ def build_vectorstore(chunks: list, session_id: str) -> FAISS:
     save_path = os.path.join(VECTORSTORE_FOLDER, session_id)
     os.makedirs(save_path, exist_ok=True)
     vectorstore.save_local(save_path)
-    logger.info(f"Vector store built and saved for session {session_id}")
+    logger.info(f"Vector store built for session {session_id}")
     return vectorstore
 
 
@@ -43,8 +47,7 @@ def load_vectorstore(session_id: str) -> FAISS:
 
 def search(session_id: str, query: str, k: int = 10) -> list:
     vs = load_vectorstore(session_id)
-    results = vs.similarity_search(query, k=k)
-    return results
+    return vs.similarity_search(query, k=k)
 
 
 def delete_vectorstore(session_id: str):

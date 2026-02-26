@@ -2,8 +2,8 @@ langchain
 langchain-community
 langchain-core
 langchain-groq
+langchain-huggingface
 groq
-fastembed
 pypdf
 tiktoken
 aiofiles
