@@ -108,7 +108,7 @@ PROMPT_MAP = {
 }
 
 def build_context(docs: List[Document], max_chars: int = 6000) -> str:
-    context = "\n\n".join([doc.page_content for doc in docs])
+    context = "\n\n".join([doc if isinstance(doc, str) else doc.page_content for doc in docs])
     return context[:max_chars]
 
 def generate_questions(
