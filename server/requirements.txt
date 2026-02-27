@@ -2,7 +2,6 @@ langchain
 langchain-community
 langchain-core
 langchain-groq
-langchain-huggingface
 groq
 pypdf
 tiktoken
@@ -12,6 +11,4 @@ uvicorn
 jinja2
 python-multipart
 PyPDF2
-faiss-cpu
 python-dotenv
-sentence-transformers

@@ -1,44 +1,35 @@
 import os
-import logging
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
-
-logger = logging.getLogger(__name__)
 
 VECTORSTORE_FOLDER = os.getenv("VECTORSTORE_FOLDER", "vectorstores")
-_embeddings = None
+_text_store = {}
 
-def get_embeddings():
-    global _embeddings
-    if _embeddings is None:
-        _embeddings = HuggingFaceEmbeddings(
-            model_name="all-MiniLM-L6-v2",
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"normalize_embeddings": True},
-        )
-    return _embeddings
-
-def build_vectorstore(chunks: list, session_id: str) -> FAISS:
-    embeddings = get_embeddings()
-    vectorstore = FAISS.from_documents(chunks, embeddings)
+def build_vectorstore(chunks: list, session_id: str):
+    texts = [chunk.page_content for chunk in chunks]
+    _text_store[session_id] = texts
     save_path = os.path.join(VECTORSTORE_FOLDER, session_id)
     os.makedirs(save_path, exist_ok=True)
-    vectorstore.save_local(save_path)
-    return vectorstore
+    with open(os.path.join(save_path, "texts.txt"), "w", encoding="utf-8") as f:
+        f.write("\n---\n".join(texts))
+    return session_id
 
-def load_vectorstore(session_id: str) -> FAISS:
-    embeddings = get_embeddings()
-    save_path = os.path.join(VECTORSTORE_FOLDER, session_id)
+def load_vectorstore(session_id: str):
+    if session_id in _text_store:
+        return _text_store[session_id]
+    save_path = os.path.join(VECTORSTORE_FOLDER, session_id, "texts.txt")
     if not os.path.exists(save_path):
-        raise FileNotFoundError(f"Vector store not found for session {session_id}")
-    return FAISS.load_local(save_path, embeddings, allow_dangerous_deserialization=True)
+        raise FileNotFoundError(f"Store not found for session {session_id}")
+    with open(save_path, "r", encoding="utf-8") as f:
+        texts = f.read().split("\n---\n")
+    _text_store[session_id] = texts
+    return texts
 
 def search(session_id: str, query: str, k: int = 10) -> list:
-    vs = load_vectorstore(session_id)
-    return vs.similarity_search(query, k=k)
+    texts = load_vectorstore(session_id)
+    return texts[:k]
 
 def delete_vectorstore(session_id: str):
     import shutil
+    _text_store.pop(session_id, None)
     save_path = os.path.join(VECTORSTORE_FOLDER, session_id)
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
